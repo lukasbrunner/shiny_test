@@ -4,3 +4,4 @@ xarray
 cartopy
 natsort
 regionmask
+seaborn

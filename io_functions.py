@@ -13,8 +13,8 @@ time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
 startyear = 1995
 endyear = 2014
 scenario = 'historical'
-base_path = '/work/uc1275/MPI-GE_ETCCDI_indices'
-temp_path = '/work/uc1275/LukasBrunner/data/ETCCDI-MPI/time_mean_indices'
+base_path = 'none'
+temp_path = 'data'
 
 
 def aggregations(index):

@@ -10,7 +10,12 @@ from core_functions import aggregate_members, mask_domain, cut_region, get_repre
 from mapplot_functions import plot_map_base
 from boxplot_functions import plot_box_base
 
-ui.panel_title("Hello Shiny!")
+ui.panel_title("Shiny test suit for ETCCDI - LE paper")
+
+@render.text()
+def text():
+    return "Source code: https://github.com/lukasbrunner/shiny_test"
+
 ui.input_select(  
     "index",  
     "Select an index below:", 

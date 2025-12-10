@@ -5,3 +5,4 @@ cartopy
 natsort
 regionmask
 seaborn
+netcdf4

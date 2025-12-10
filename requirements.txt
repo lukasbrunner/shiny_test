@@ -1,5 +1,6 @@
-natsort
 shiny
 matplotlib
 xarray
 cartopy
+natsort
+regionmask

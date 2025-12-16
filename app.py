@@ -46,6 +46,7 @@ with ui.layout_column_wrap(width=.5):
             "std": "Standard deviation",
             "cv": "Coefficient of Determination"
             },  
+            selected='std'
         ) 
 
         ui.input_switch(
@@ -80,42 +81,32 @@ with ui.layout_column_wrap(width=.5):
 #         nr_members = input.nr_members()
 
 
-with ui.sidebar():  
+with ui.sidebar(open='closed'):  
     ui.HTML("<b>Data and Methods</b>")
     ui.HTML("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.")
 
 
 
-
-@render.download(filename="file.nc")
-def download2():
-    """
-    Another way to implement a file download is by yielding bytes; either all at
-    once, like in this case, or by yielding multiple times. When using this
-    approach, you should pass a filename argument to @render.download, which
-    determines what the browser will name the downloaded file.
-    """
-
+def calc_data():
     da = load_data(input.index())
     tmp = aggregate_members(da, input.aggregation())  # defaults to member mean
     tmp = cut_region(tmp, lat_bounds=input.lat_range(), lon_bounds=input.lon_range())
     if input.mask_ocean():
         tmp = mask_domain(tmp)
-    with io.BytesIO() as buf:
-        tmp.to_netcdf(buf)
-        yield buf.getvalue()
-
-
+    return tmp
 
 @render.plot(alt="A map")  
 def plot():
-    da = load_data(input.index())
-    tmp = aggregate_members(da, input.aggregation())  # defaults to member mean
-    tmp = cut_region(tmp, lat_bounds=input.lat_range(), lon_bounds=input.lon_range())
-    if input.mask_ocean():
-        tmp = mask_domain(tmp)
+    tmp = calc_data()
     fig, _, _ = plot_map_base(tmp)
     return fig
+
+
+@render.download(filename="file.nc", label='Download data', media_type='nc')
+def download():
+    tmp = calc_data()
+    yield tmp.to_netcdf(None)
+
 
 def url_git():
     url = "https://github.com/lukasbrunner/shiny_test"

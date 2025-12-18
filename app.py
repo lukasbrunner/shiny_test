@@ -21,6 +21,7 @@ ui.tags.style('''
     padding-left: 1rem;
     padding-right: 1rem;
     padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 /* center download links and add spacing between them */
 .shiny-download-link {
@@ -48,10 +49,6 @@ with ui.layout_column_wrap(width=.5):
             "index",  
             "Extreme index:", 
             index_acronym_map,
-            # {"txx": "TXx", 
-            # "tx90p": "TX90p", 
-            # "rx1day": "Rx1day"
-            # },  
         ) 
         ui.input_select(  
             "aggregation",  
@@ -85,11 +82,14 @@ with ui.layout_column_wrap(width=.5):
             value=[-90, 90],
             ) 
 
-ui.input_switch("plot_options", "Manual plot options", False) 
 
-with ui.panel_conditional("input.plot_options"):
-    with ui.layout_column_wrap(width=1):
-        with ui.card():
+# explicit spacer between the two card groups (guaranteed gap)
+ui.HTML('<div style="height:1rem"></div>')
+
+with ui.layout_column_wrap(width=1):
+    with ui.card():
+        ui.input_switch("plot_options", "Manual plot options", False) 
+        with ui.panel_conditional("input.plot_options"):
             ui.input_numeric("levels", "Colorbar levels:", 10)
             ui.input_numeric("min", "Colorbar minimum", None)
             ui.input_numeric("max", "Colorbar maximum", None)

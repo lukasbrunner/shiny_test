@@ -40,7 +40,7 @@ ui.tags.style('''
 }
 ''')
 
-ui.input_switch("advanced", "Advanced options", False) 
+# ui.input_switch("advanced", "Advanced options", False) 
 
 with ui.layout_column_wrap(width=.5):
     with ui.card():
@@ -94,8 +94,8 @@ with ui.panel_conditional("input.plot_options"):
             ui.input_numeric("min", "Colorbar minimum", None)
             ui.input_numeric("max", "Colorbar maximum", None)
             ui.input_text("cmap", "Colormap", "viridis")
-
-
+            # ui.input_slider("cbar_fraction", "Colorbar size", value=.02, min=0, max=.1)  
+# added by AI
 # Reset manual plot option inputs to their defaults when the switch is disabled
 @reactive.Effect
 def _reset_manual_options():
@@ -171,6 +171,7 @@ def plot():
         levels=input.levels() if input.plot_options() else 10,
         vmin=input.min() if input.plot_options() else None,
         vmax=input.max() if input.plot_options() else None,
+        # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
     )
     return fig
 

@@ -14,12 +14,29 @@ from utils import index_acronym_map
 
 ui.panel_title("Shiny test suit for ETCCDI - LE paper")
 
+# Custom CSS styles added by AI
 # Add a bit of inner horizontal spacing for card contents
 ui.tags.style('''
 .bslib-card {
     padding-left: 1rem;
     padding-right: 1rem;
     padding-top: 0.5rem;
+}
+/* center download links and add spacing between them */
+.shiny-download-link {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0.75rem; /* general gap after download links */
+}
+/* larger explicit gap between plot and data download */
+#download_plot {
+    display: block;
+    margin: 0 auto 1.0rem auto; /* bottom gap between plot and data download */
+}
+#download {
+    display: block;
+    margin: 0.25rem auto; /* breathing room for data download */
 }
 ''')
 
@@ -67,6 +84,56 @@ with ui.layout_column_wrap(width=.5):
             "Latitude range", min=-90, max=90, 
             value=[-90, 90],
             ) 
+
+ui.input_switch("plot_options", "Manual plot options", False) 
+
+with ui.panel_conditional("input.plot_options"):
+    with ui.layout_column_wrap(width=1):
+        with ui.card():
+            ui.input_numeric("levels", "Colorbar levels:", 10)
+            ui.input_numeric("min", "Colorbar minimum", None)
+            ui.input_numeric("max", "Colorbar maximum", None)
+            ui.input_text("cmap", "Colormap", "viridis")
+
+
+# Reset manual plot option inputs to their defaults when the switch is disabled
+@reactive.Effect
+def _reset_manual_options():
+    if not input.plot_options():
+        # Try to obtain a session object in a few ways depending on shiny version
+        session = None
+        try:
+            if hasattr(reactive, "get_current_session"):
+                session = reactive.get_current_session()
+        except Exception:
+            session = None
+
+        if session is None:
+            try:
+                # some versions expose get_current_session at top-level
+                from shiny import get_current_session as _gcs
+
+                try:
+                    session = _gcs()
+                except Exception:
+                    session = None
+            except Exception:
+                session = None
+
+        if session is None:
+            return
+
+        # set inputs back to sensible defaults
+        try:
+            session.set_input_value("levels", 10)
+            session.set_input_value("min", None)
+            session.set_input_value("max", None)
+            session.set_input_value("cmap", "viridis")
+        except Exception:
+            # fail silently if the session API is not available
+            pass
+
+
         
 # nr_members = 50
 # with ui.panel_conditional("input.advanced"):
@@ -86,7 +153,6 @@ with ui.sidebar(open='closed'):
     ui.HTML("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.")
 
 
-
 def calc_data():
     da = load_data(input.index())
     tmp = aggregate_members(da, input.aggregation())  # defaults to member mean
@@ -95,18 +161,36 @@ def calc_data():
         tmp = mask_domain(tmp)
     return tmp
 
+
 @render.plot(alt="A map")  
 def plot():
     tmp = calc_data()
-    fig, _, _ = plot_map_base(tmp)
+    fig, _, _ = plot_map_base(
+        tmp, 
+        cmap=input.cmap() if input.plot_options() else 'viridis', 
+        levels=input.levels() if input.plot_options() else 10,
+        vmin=input.min() if input.plot_options() else None,
+        vmax=input.max() if input.plot_options() else None,
+    )
     return fig
+
+
+@render.download(filename="plot.png", label='Download plot', media_type='image/png')
+def download_plot():
+    tmp = calc_data()
+    # create the same figure as the plot output
+    fig, _, _ = plot_map_base(tmp, cmap='viridis')
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+    plt.close(fig)
+    buf.seek(0)
+    yield buf.getvalue()
 
 
 @render.download(filename="file.nc", label='Download data', media_type='nc')
 def download():
     tmp = calc_data()
     yield tmp.to_netcdf(None)
-
 
 def url_git():
     url = "https://github.com/lukasbrunner/shiny_test"

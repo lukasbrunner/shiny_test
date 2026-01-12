@@ -37,8 +37,6 @@ def cut_region(da, lon_bounds=None, lat_bounds=None):
 
     da = set_longitude_convention(da, '180')  # default: [-180, 180] convention of bounds
     if np.max(lon_bounds) > 180:
-        if np.min(lon_bounds) < 0:
-            lon_bounds[0] = 0
         da = set_longitude_convention(da, '360')
 
     if lat_bounds is None:

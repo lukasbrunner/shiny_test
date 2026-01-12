@@ -49,7 +49,7 @@ def load_data(index, startyear=startyear, endyear=endyear, overwrite=False):
     print(f'Load {index=}')
     fn_save = f'{index}_{startyear}-{endyear}.nc'
     if os.path.isfile(os.path.join(temp_path, fn_save)) and not overwrite:
-        da = xr.open_dataset(os.path.join(temp_path, fn_save))[f'{index}']
+        da = xr.open_dataset(os.path.join(temp_path, fn_save), decode_timedelta=False)[f'{index}']
         return da.copy()  # DEBUG: kernel keeps dying, does this help?
         
     files = natsorted(glob(os.path.join(base_path, index, scenario, '*.nc')))

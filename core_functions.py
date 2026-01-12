@@ -1,6 +1,7 @@
 import numpy as np
 import regionmask
 
+
 def aggregate_area(da):
     if not 'lat' in da.coords:
         return da
@@ -46,6 +47,7 @@ def cut_region(da, lon_bounds=None, lat_bounds=None):
     
     
 def aggregate_members(da, method='mean'):
+    print(da.attrs['units'])
     if method == 'mean':
         da = da.mean('member', keep_attrs=True)
         da.attrs['long_name'] = '{} members mean'.format(
@@ -77,19 +79,17 @@ def aggregate_members(da, method='mean'):
             da.attrs.get('long_name', da.name))
         return da
     if method == 'cv':
-        mean = da.mean('member')
-        
-        # NOTE: cv is not well defined for negative means
-        # this happens if temperature is in degC
-        if np.any(mean < 0):
-            raise ValueError
+        if da.attrs.get('units', '').lower() in ['°c', 'celsius', 'degc', 'deg c', 'c']:
+            raise ValueError("Coefficient of variation for {} is not defined in °C".format(
+                da.attrs.get('long_name', da.name)))
             
+        mean = da.mean('member')
         attrs = da.attrs
         da = da.std('member') / mean
         da.attrs = attrs
         da.attrs['long_name'] = '{} members coefficient of variation'.format(
             da.attrs.get('long_name', da.name))
-        da.attrs['units'] = '1'
+        da.attrs['units'] = '-'
         return da
 
 

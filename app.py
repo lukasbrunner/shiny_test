@@ -7,12 +7,15 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
 from io_functions import load_data  # ultimately replace this by something simpler
-from core_functions import aggregate_members, mask_domain, cut_region, get_representative_member
+from core_functions import aggregate_members, mask_domain, cut_region
 from mapplot_functions import plot_map_base
 from boxplot_functions import plot_box_base
 from utils import index_acronym_map
 
 ui.panel_title("Shiny test suit for ETCCDI - LE paper")
+ui.p("For more information, see the sidebar (click '>' top left) or the accompanying publication TODO: add link.")
+ui.HTML('<div style="height:0.75rem"></div>')
+
 
 # Custom CSS styles added by AI
 # Add a bit of inner horizontal spacing for card contents
@@ -33,10 +36,16 @@ ui.tags.style('''
 /* larger explicit gap between plot and data download */
 #download_plot {
     display: block;
+    width: 50vw; /* half the viewport width */
+    max-width: 900px; /* optional cap for very wide screens */
+    min-width: 180px; /* keep usable on very small screens */
     margin: 0 auto 1.0rem auto; /* bottom gap between plot and data download */
 }
 #download {
     display: block;
+    width: 50vw; /* half the viewport width */
+    max-width: 900px; /* optional cap for very wide screens */
+    min-width: 180px; /* keep usable on very small screens */
     margin: 0.25rem auto; /* breathing room for data download */
 }
 ''')
@@ -58,7 +67,7 @@ with ui.layout_column_wrap(width=.5):
             "max": "Maximum",
             "min": "Minimum",
             "std": "Standard deviation",
-            "cv": "Coefficient of Determination"
+            "cv": "Coefficient of variation",
             },  
             selected='std'
         ) 
@@ -68,20 +77,47 @@ with ui.layout_column_wrap(width=.5):
             "Mask ocean", 
             False,
         ) 
+
+        ui.input_switch(
+            'celsius',
+            """
+            Temperature in °C (default Kelvin)
+            Note that this only affects temperature-based for indices. 
+            The coefficient of variation is not available for all indices in °C.
+            """,
+            False,
+            )
+
     with ui.card():
+        # Longitude extent
+        ui.p("Longitude extent (either [-180, 180] or [0, 360] convention)")
+        with ui.layout_column_wrap(width=.5):
+            with ui.card():
+                ui.input_numeric("lon_min", "Minimum", -180)
+            with ui.card():
+                ui.input_numeric("lon_max", "Maximum", 180)
+        # ui.p("Note that either [-180, 180] or [0, 360] conventions are possible.")
 
-        ui.input_slider(
-            "lon_range", 
-            "Longitude range", min=-180, max=360, 
-            value=[-180, 180],
-            )  
+        ui.p("Latitude extent")
+        with ui.layout_column_wrap(width=.5):
+            with ui.card():
+                ui.input_numeric("lat_min", "Minimum", -90)
+            with ui.card():
+                ui.input_numeric("lat_max", "Maximum", 90)
 
-        ui.input_slider(
-            "lat_range", 
-            "Latitude range", min=-90, max=90, 
-            value=[-90, 90],
-            ) 
+        # ui.input_slider(
+        #     "lon_range",
+        #     "Longitude range",
+        #     min=0,
+        #     max=360,
+        #     value=[0, 360],
+        # )
 
+        # ui.input_slider(
+        #     "lat_range", 
+        #     "Latitude range", min=-90, max=90, 
+        #     value=[-90, 90],
+        #     ) 
 
 # explicit spacer between the two card groups (guaranteed gap)
 ui.HTML('<div style="height:1rem"></div>')
@@ -133,7 +169,6 @@ def _reset_manual_options():
             # fail silently if the session API is not available
             pass
 
-
         
 # nr_members = 50
 # with ui.panel_conditional("input.advanced"):
@@ -154,9 +189,11 @@ with ui.sidebar(open='closed'):
 
 
 def calc_data():
-    da = load_data(input.index())
+    da = load_data(input.index(), celsius=input.celsius())
     tmp = aggregate_members(da, input.aggregation())  # defaults to member mean
-    tmp = cut_region(tmp, lat_bounds=input.lat_range(), lon_bounds=input.lon_range())
+    # tmp = cut_region(tmp, lat_bounds=input.lat_range(), lon_bounds=input.lon_range())
+    tmp = cut_region(tmp, lat_bounds=[input.lat_min(), input.lat_max()], lon_bounds=[input.lon_min(), input.lon_max()])
+    # tmp = set_temperature_unit(tmp, to_celsius=input.celsius())
     if input.mask_ocean():
         tmp = mask_domain(tmp)
     return tmp
@@ -165,6 +202,22 @@ def calc_data():
 @render.plot(alt="A map")  
 def plot():
     tmp = calc_data()
+    fig, ax, _ = plot_map_base(
+        tmp, 
+        cmap=input.cmap() if input.plot_options() else 'viridis', 
+        levels=input.levels() if input.plot_options() else 10,
+        vmin=input.min() if input.plot_options() else None,
+        vmax=input.max() if input.plot_options() else None,
+        # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
+    )
+    # ax.set_extent([*input.lon_range(), *input.lat_range()])
+    return fig
+
+
+@render.download(filename="plot.png", label='Download plot', media_type='image/png')
+def download_plot():
+    tmp = calc_data()
+    # create the same figure as the plot output
     fig, _, _ = plot_map_base(
         tmp, 
         cmap=input.cmap() if input.plot_options() else 'viridis', 
@@ -173,14 +226,6 @@ def plot():
         vmax=input.max() if input.plot_options() else None,
         # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
     )
-    return fig
-
-
-@render.download(filename="plot.png", label='Download plot', media_type='image/png')
-def download_plot():
-    tmp = calc_data()
-    # create the same figure as the plot output
-    fig, _, _ = plot_map_base(tmp, cmap='viridis')
     buf = io.BytesIO()
     fig.savefig(buf, format='png', bbox_inches='tight')
     plt.close(fig)

@@ -47,7 +47,7 @@ def plot_map_base(da, ax=None, nice_colorbar=False, **kwargs):
     p = da.plot.pcolormesh(
         ax=ax,
         transform=ccrs.PlateCarree(),
-        add_colorbar=~nice_colorbar,  
+        add_colorbar=not nice_colorbar,  
         cbar_kwargs={'label': ''},
         robust=True,
         **kwargs,

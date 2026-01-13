@@ -224,7 +224,7 @@ def download_plot():
         levels=input.levels() if input.plot_options() else 10,
         vmin=input.min() if input.plot_options() else None,
         vmax=input.max() if input.plot_options() else None,
-        # nice_colorbar=False,
+        nice_colorbar=False,
         # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
     )
     buf = io.BytesIO()

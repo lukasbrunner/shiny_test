@@ -220,6 +220,7 @@ def download_plot():
     # create the same figure as the plot output
     fig, _, _ = plot_map_base(
         tmp, 
+        dpi=150,
         cmap=input.cmap() if input.plot_options() else 'viridis', 
         levels=input.levels() if input.plot_options() else 10,
         vmin=input.min() if input.plot_options() else None,

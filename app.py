@@ -199,7 +199,7 @@ def calc_data():
     return tmp
 
 
-@render.plot(alt="A map")  
+@render.plot()  
 def plot():
     tmp = calc_data()
     fig, ax, _ = plot_map_base(
@@ -224,6 +224,7 @@ def download_plot():
         levels=input.levels() if input.plot_options() else 10,
         vmin=input.min() if input.plot_options() else None,
         vmax=input.max() if input.plot_options() else None,
+        nice_colorbar=True,
         # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
     )
     buf = io.BytesIO()

@@ -1,19 +1,31 @@
-from shiny import render, reactive
-from shiny.express import input, ui
-
 import io
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+from shiny import render, reactive
+from shiny.express import input, ui
 
-from io_functions import load_data  # ultimately replace this by something simpler
-from core_functions import aggregate_members, mask_domain, cut_region
-from mapplot_functions import plot_map_base
-from boxplot_functions import plot_box_base
-from utils import index_acronym_map
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(dir_path, '..', 'code'))
 
-ui.panel_title("Shiny test suit for ETCCDI - LE paper")
-ui.p("For more information, see the sidebar (click '>' top left) or the accompanying publication TODO: add link.")
+from core.io_functions import load_data
+from core.core_functions import aggregate_members, mask_domain, cut_region
+from core.mapplot_functions import plot_map_base
+from core.utils import index_acronym_map
+
+ui.panel_title("Variabiliy Atlas for ETCCDI climate extreme indices")
+ui.p("For more information, see the sidebar (click '>' top left) or the accompanying publication TODO: add link onced published.")
+ui.HTML('<div style="height:0.75rem"></div>')
+ui.h5("Note to reviewers:")
+ui.p(
+"""
+This is a preliminary version of the atlas for review. Please feel free to include
+suggestions or comments on the atlas in your review. The final version will include more detailed information
+on background, data, and methods as well as references to the relevant locations in the final manusript.  
+The source code is available on GitHub: https://github.com/lukasbrunner/etccdi_internal_variability  
+""")
 ui.HTML('<div style="height:0.75rem"></div>')
 
 
@@ -209,6 +221,7 @@ def plot():
         vmin=input.min() if input.plot_options() else None,
         vmax=input.max() if input.plot_options() else None,
         # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
+        nice_colorbar=False,
     )
     # ax.set_extent([*input.lon_range(), *input.lat_range()])
     return fig
@@ -225,7 +238,7 @@ def download_plot():
         levels=input.levels() if input.plot_options() else 10,
         vmin=input.min() if input.plot_options() else None,
         vmax=input.max() if input.plot_options() else None,
-        # nice_colorbar=True,
+        nice_colorbar=False,
         # cbar_kwargs={'fraction': input.cbar_fraction()} if input.plot_options() else {}
     )
     buf = io.BytesIO()

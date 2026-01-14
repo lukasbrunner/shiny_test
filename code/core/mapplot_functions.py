@@ -4,11 +4,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
-def _cbar_defaults(kwargs):
-    cbar_kwargs_defaults = {'label': '', 'fraction': .024, 'pad': .01}
-    cbar_kwargs_defaults.update(kwargs.get('cbar_kwargs', {}))
-    kwargs['cbar_kwargs'] = cbar_kwargs_defaults
-    return kwargs
+# def _cbar_defaults(kwargs):
+#     cbar_kwargs_defaults = {'label': '', 'fraction': .024, 'pad': .01}
+#     cbar_kwargs_defaults.update(kwargs.get('cbar_kwargs', {}))
+#     kwargs['cbar_kwargs'] = cbar_kwargs_defaults
+#     return kwargs
 
 
 def _cmap_defaults(kwargs):
@@ -32,23 +32,20 @@ def _add_nice_colorbar(p):
     plt.colorbar(p, cax=cax)
 
 
-def plot_map_base(da, ax=None, nice_colorbar=False, dpi=None,**kwargs):
+def plot_map_base(da, ax=None, nice_colorbar=True, **kwargs):
     # kwargs = _cbar_defaults(kwargs)
     kwargs = _cmap_defaults(kwargs)
 
     if ax is None:
         central_longitude = 0
-        if da['lon'].min() >= 0 and da['lon'].max() >= 180:
+        if da['lon'].min() > 45 and da['lon'].max() > 180:
             central_longitude = da['lon'].mean().item()
-        fig, ax = plt.subplots(dpi=dpi, subplot_kw={'projection': ccrs.PlateCarree(central_longitude=central_longitude)})
-    else:
-        fig = ax.get_figure()
+        fig, ax = plt.subplots(subplot_kw={'projection': ccrs.PlateCarree(central_longitude=central_longitude)})
 
     p = da.plot.pcolormesh(
         ax=ax,
         transform=ccrs.PlateCarree(),
-        add_colorbar=not nice_colorbar,  
-        cbar_kwargs={'label': ''},
+        add_colorbar=not nice_colorbar,  # add manually to ensure nice height
         robust=True,
         **kwargs,
     )

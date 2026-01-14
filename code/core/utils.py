@@ -5,6 +5,7 @@ index_unit_map = {
     'tnn': '°C',
     'txn': '°C',
     'tnx': '°C',
+    'dtr': '°C',
     # relative threshold
     'tx90p': '%',
     'tn10p': '%',
@@ -17,6 +18,7 @@ index_unit_map = {
     'id': 'days',
     'fd': 'days',
     'tr': 'days',
+    'gsl': 'days',
     # --- precipitation-based ---
     # no threshold
     'prcptot': 'mm',
@@ -40,6 +42,7 @@ index_acronym_map = {
     'tnn': 'TNn',
     'txn': 'TXn',
     'tnx': 'TNx',
+    'dtr': 'DTR',
     # relative threshold
     'tx90p': 'TX90p',
     'tn10p': 'TN10p',
@@ -52,6 +55,7 @@ index_acronym_map = {
     'id': 'ID',
     'fd': 'FD',
     'tr': 'TR',
+    'gsl': 'GSL',
     # --- precipitation-based ---
     # no threshold
     'prcptot': 'pr',
@@ -80,6 +84,7 @@ index_longname_map = {
     'tnn': 'Coldest daily minimum',
     'txn': 'Coldest daily maximum',
     'tnx': 'Hottest daily minimum',
+    'dtr': 'Daily temperature range',
     # relative threshold
     'tx90p': 'Warm days',
     'tn10p': 'Cool nights',
@@ -92,6 +97,7 @@ index_longname_map = {
     'id': 'Ice days',
     'fd': 'Frost days',
     'tr': 'Tropical nights',
+    'gsl': 'Growing season length',
     # --- precipitation-based ---
     # no threshold
     'prcptot': 'Total precipitation',
